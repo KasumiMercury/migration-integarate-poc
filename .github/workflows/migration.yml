@@ -204,16 +204,19 @@ jobs:
         id: summary
         run: |
           file_description_mapping='${{ needs.check-migrations.outputs.file_description_mapping }}'
-          summary="|Source|Desc|Integrated|\n|---|---|---|"
+
+          echo "|Source|Desc|Integrated|" > migration_summary.txt
+          echo "|---|---|---|" >> migration_summary.txt
+          
           echo "$file_description_mapping" | jq -c '.[]' | while read -r entry; do
             orig_file=$(echo "$entry" | jq -r '.file')
             desc=$(echo "$entry" | jq -r '.description')
-            # migrations配下でdescriptionを含むファイルを検索
             migration_file=$(find migrations -type f -name "*${desc}*.sql" | head -n 1)
             migration_file=$(basename "$migration_file")
-            summary="$summary\n|$orig_file|$desc|$migration_file|"
+            echo "|$orig_file|$desc|$migration_file|" >> migration_summary.txt
           done
-          echo -e "$summary" > migration_summary.txt
+          
+          cat migration_summary.txt
 
       - name: Post summary as PR comment
         env:
