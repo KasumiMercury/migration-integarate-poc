@@ -21,9 +21,11 @@ jobs:
           ref: ${{ github.event.workflow_run.head_branch}}
           fetch-depth: 0
 
+      - name: Fetch main branch
+        run: git fetch origin main:refs/remotes/origin/main
+
       - name: Setup Atlas
         uses: ariga/setup-atlas@v0
       
       - name: Lint Migrations
         run: atlas migrate lint --dev-url "docker://postgres/17/test" --git-base "main"
-      
