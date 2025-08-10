@@ -160,6 +160,11 @@ jobs:
       - name: Create New Migration
         run: atlas migrate new "${{ matrix.target.description }}"
 
+      - name: Debug migration dir
+        run: |
+          echo "Current migration directory:"
+          ls -la migrations
+
       - name: Find created migration file
         id: find-migration-file
         run: |
