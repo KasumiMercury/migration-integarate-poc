@@ -1,5 +1,6 @@
-h1:b06OfnfLvcK7ChX10TTS3q59sWQVQC4TltJ3SX1IKQ0=
+h1:apwoVQkb/HStDXZD3Wn2E95Sb56xflKAo6qIac9abdw=
 20250810075741_create_task_table.sql h1:BnzgyyW6B/qcL9XoKXGPhfOcrRLdexpqaPRWxWIk/A4=
 20250810080158_Create_user_table.sql h1:bkoD1ym+NzIs0aHL0LVf9Cz0s/MmOl7Mv/W/kSlmlb0=
 20250810080208_Add_user_email_index.sql h1:d8Q/LZ3KaNiCV0+HNcIY8U/x+TinNj0zmjwz8/y8dro=
 20250810082336_Create_group_table.sql h1:DEtQYU9KdYaTyb6ZYCSwqFNdIrbOdfUpqdu6ncXJ3+Y=
+20250810082347_Add_user_group_foreign_key.sql h1:WwXRsJ/Jn5WF/oCRLSS0sA7UlEANsI+iwMxCgaAco9Q=
