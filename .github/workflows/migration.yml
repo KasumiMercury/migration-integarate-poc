@@ -78,13 +78,19 @@ jobs:
           echo "changed_targets_config<<EOF" >> $GITHUB_OUTPUT
           echo "$changed_targets_json" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-      
+          
       - name: Mixed target changes detected
         if: steps.detect-changes.outputs.changed_targets_count > 1
         run: |
-          echo "Mixed migration target changes detected - cannot process multiple targets."
-          echo "[]"
+          echo "::error::Mixed migration target changes detected - cannot process multiple targets."
+          exit 1
       
+      - name: No migration changes found
+        if: steps.detect-changes.outputs.changed_targets_count == 0
+        run: |
+          echo "No migration file changes detected."
+          echo "[]"
+
       - name: Process migration target changes
         if: steps.detect-changes.outputs.changed_targets_count == 1
         run: |
@@ -121,10 +127,4 @@ jobs:
           
           echo "Final file-description mapping:"
           echo "$file_description_mapping"
-      
-      - name: No migration changes found
-        if: steps.detect-changes.outputs.changed_targets_count == 0
-        run: |
-          echo "No migration file changes detected."
-          echo "[]"
           
