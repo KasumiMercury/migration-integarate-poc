@@ -25,5 +25,4 @@ jobs:
         uses: ariga/setup-atlas@v0
       
       - name: Lint Migrations
-        run: atlas migrate lint --dev-url "docker://postgres/17/test" --git-base "main"
-      
+        run: atlas migrate lint --dev-url "docker://postgres/17/test" --git-base "origin/main"
