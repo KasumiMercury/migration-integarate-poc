@@ -27,7 +27,10 @@ env:
 jobs:
   check-migrations:
     runs-on: ubuntu-latest
-    
+
+    outputs:
+      file_description_mapping: ${{ steps.process-migrations.outputs.file_description_mapping }}
+
     permissions:
       contents: read
       pull-requests: read
@@ -78,7 +81,7 @@ jobs:
           echo "changed_targets_config<<EOF" >> $GITHUB_OUTPUT
           echo "$changed_targets_json" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-          
+
       - name: Mixed target changes detected
         if: steps.detect-changes.outputs.changed_targets_count > 1
         run: |
@@ -93,6 +96,7 @@ jobs:
 
       - name: Process migration target changes
         if: steps.detect-changes.outputs.changed_targets_count == 1
+        id: process-migrations
         run: |
           chmod +x scripts/extract-migration-descriptions.sh
           
@@ -118,7 +122,6 @@ jobs:
           echo "file_description_mapping<<EOF" >> $GITHUB_OUTPUT
           echo "$file_description_mapping" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-        id: process-migrations
       
       - name: Output file-description mapping
         if: steps.detect-changes.outputs.changed_targets_count == 1
@@ -127,4 +130,57 @@ jobs:
           
           echo "Final file-description mapping:"
           echo "$file_description_mapping"
-          
+  
+  integrate-migrations:
+    needs: check-migrations
+    runs-on: ubuntu-latest
+
+    if: ${{ needs.check-migrations.outputs.file_description_mapping != '[]' }}
+
+    strategy:
+      max-parallel: 1
+      fail-fast: true
+      matrix:
+        target: ${{ fromJson(needs.check-migrations.outputs.file_description_mapping) }}
+
+    permissions:
+      contents: read
+      pull-requests: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Atlas
+        uses: ariga/setup-atlas@v0
+
+      - name: Create New Migration
+        run: atlas migrate new "${{ matrix.target.description }}"
+
+      - name: Find created migration file
+        id: find-migration-file
+        run: |
+          found_file=$(find migrations -type f -name "*${{ matrix.target.description }}*.sql" | head -n 1)
+          if [ -z "$found_file" ]; then
+            echo "::error::Migration file not found."
+            exit 1
+          fi
+          echo "found_file=$found_file" >> $GITHUB_OUTPUT
+
+      - name: Copy migration content
+        run: |
+          content=$(cat "${{ matrix.target.file }}")
+          echo "$content" > "${{ steps.find-migration-file.outputs.found_file }}"
+      
+      - name: Recalculate hash
+        run: atlas migrate hash
+
+      - name: Commit migration file
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add "${{ steps.find-migration-file.outputs.found_file }}"
+          git commit -m "Add migration file for ${{ matrix.target.description }}" || echo "Nothing to commit"
+          git push
