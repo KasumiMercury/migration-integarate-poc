@@ -19,7 +19,7 @@ env:
       "task": {
         "name": "task",
         "directory": "task",
-        "pattern": "^([0-9]+)\\\\.sql$",
+        "pattern": "^[0-9]+_(.+)\\.sql$",
         "description": "Atlas task migrations"
       }
     }
