@@ -185,3 +185,39 @@ jobs:
           git add "migrations"
           git commit -m "Add migration file for ${{ matrix.target.description }}" || echo "Nothing to commit"
           git push
+
+  post-migration-summary:
+    needs: [check-migrations, integrate-migrations]
+    runs-on: ubuntu-latest
+    if: ${{ needs.check-migrations.outputs.file_description_mapping != '[]' }}
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Generate migration summary
+        id: summary
+        run: |
+          file_description_mapping='${{ needs.check-migrations.outputs.file_description_mapping }}'
+          summary="|Source|Desc|Integrated|\n|---|---|---|"
+          echo "$file_description_mapping" | jq -c '.[]' | while read -r entry; do
+            orig_file=$(echo "$entry" | jq -r '.file')
+            desc=$(echo "$entry" | jq -r '.description')
+            # migrations配下でdescriptionを含むファイルを検索
+            migration_file=$(find migrations -type f -name "*${desc}*.sql" | head -n 1)
+            migration_file=$(basename "$migration_file")
+            summary="$summary\n|$orig_file|$desc|$migration_file|"
+          done
+          echo -e "$summary" > migration_summary.txt
+
+      - name: Post summary as PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr_number=${{ github.event.pull_request.number }}
+          gh pr comment "$pr_number" --body "$(cat migration_summary.txt)"
