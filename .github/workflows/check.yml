@@ -1,0 +1,29 @@
+name: Migration Check
+
+on:
+  workflow_run:
+    workflows: ["Migration Integration"]
+    types:
+      - completed
+
+jobs:
+  check-migrations:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch}}
+          fetch-depth: 0
+
+      - name: Setup Atlas
+        uses: ariga/setup-atlas@v0
+      
+      - name: Lint Migrations
+        run: atlas migrate lint --dev-url "docker://postgres/17/test" --git-base "main"
+      

@@ -1,4 +1,4 @@
-name: Migration Check
+name: Migration Integration
 
 on:
   pull_request:
