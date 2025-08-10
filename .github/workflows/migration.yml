@@ -95,12 +95,10 @@ jobs:
           target_key=$(echo "$changed_targets_config" | jq -r 'keys[0]')
           target_config=$(echo "$changed_targets_config" | jq -r --arg key "$target_key" '.[$key]')
           
-          target_pattern=$(echo "$target_config" | jq -r '.pattern')
+          target_pattern=$(echo "$target_config" | jq -r '.pattern' | sed 's/\\\\/\\/g')
           files_array=$(echo "$target_config" | jq -r '.files')
-          
           migration_files=$(echo "$files_array" | jq -r 'join(" ")')
-          
-          descriptions=$(echo "$migration_files" | xargs ./scripts/extract-migration-descriptions.sh "$target_pattern")
+          descriptions=$(./scripts/extract-migration-descriptions.sh "$target_pattern" $migration_files)
           
           file_description_mapping=$(echo "$files_array" | jq -r '.[]' | nl -nln | while read -r index file; do
             description=$(echo "$descriptions" | jq -r ".[$((index-1))]")
