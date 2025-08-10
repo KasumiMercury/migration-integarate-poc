@@ -144,7 +144,7 @@ jobs:
         target: ${{ fromJson(needs.check-migrations.outputs.file_description_mapping) }}
 
     permissions:
-      contents: read
+      contents: write
       pull-requests: read
     
     steps:
