@@ -144,13 +144,14 @@ jobs:
         target: ${{ fromJson(needs.check-migrations.outputs.file_description_mapping) }}
 
     permissions:
-      contents: read
+      contents: write
       pull-requests: read
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
           fetch-depth: 0
 
       - name: Setup Atlas
