@@ -182,6 +182,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add "${{ steps.find-migration-file.outputs.found_file }}"
+          git add "migrations"
           git commit -m "Add migration file for ${{ matrix.target.description }}" || echo "Nothing to commit"
           git push
