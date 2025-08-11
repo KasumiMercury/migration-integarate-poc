@@ -1,0 +1,10 @@
+{
+  "user/V7__Remove_user_middle_name_column.sql": {
+    "description": "Remove_user_middle_name_column",
+    "integrated_file": "migrations/20250811030711_Remove_user_middle_name_column.sql"
+  },
+  "user/V8__Add_composite_index_user_group.sql": {
+    "description": "Add_composite_index_user_group",
+    "integrated_file": "migrations/20250811030712_Add_composite_index_user_group.sql"
+  }
+}
