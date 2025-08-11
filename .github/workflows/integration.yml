@@ -128,11 +128,9 @@ jobs:
           
           target_pattern=$(echo "$target_config" | jq -r '.pattern' | sed 's/\\\\/\\/g')
           files_array=$(echo "$target_config" | jq -r '.files')
-          migration_files=$(echo "$files_array" | jq -r 'join(" ")')
-          descriptions=$(./scripts/extract-migration-descriptions.sh "$target_pattern" "$migration_files")
           
-          file_description_mapping=$(echo "$files_array" | jq -r '.[]' | nl -nln | while read -r index file; do
-            description=$(echo "$descriptions" | jq -r ".[$((index-1))]")
+          file_description_mapping=$(echo "$files_array" | jq -r '.[]' | while read -r file; do
+            description=$(./scripts/extract-migration-descriptions.sh "$target_pattern" "$file" | jq -r '.[0]')
             echo "{\"file\": \"$file\", \"description\": \"$description\"}"
           done | jq -s '.')
           
