@@ -156,7 +156,7 @@ jobs:
     needs: check-migrations
     runs-on: ubuntu-latest
 
-    if: ${{ needs.check-migrations.outputs.file_description_mapping != '[]' }}
+    if: ${{ needs.check-migrations.outputs.file_description_mapping != '' }}
 
     permissions:
       contents: write
@@ -227,7 +227,7 @@ jobs:
   post-migration-summary:
     needs: [check-migrations, integrate-migrations]
     runs-on: ubuntu-latest
-    if: ${{ needs.check-migrations.outputs.file_description_mapping != '[]' }}
+    if: ${{ needs.check-migrations.outputs.file_description_mapping != '' }}
     permissions:
       pull-requests: write
       contents: read
