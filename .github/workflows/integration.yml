@@ -56,9 +56,24 @@ jobs:
           
           echo "Found SQL files:"
           echo "$all_added_sql_files"
-          
+
+          integrated_json="integrated.json"
+          if [ -f "$integrated_json" ]; then
+            already_integrated=$(jq -r 'keys[]' "$integrated_json")
+            filtered_sql_files=$(echo "$all_added_sql_files" | grep -v -F -f <(echo "$already_integrated") || true)
+          else
+            filtered_sql_files="$all_added_sql_files"
+          fi
+
+          if [ -z "$filtered_sql_files" ]; then
+            echo "All detected SQL files are already integrated."
+            echo "changed_targets_count=0" >> $GITHUB_OUTPUT
+            echo "changed_targets_config={}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           chmod +x scripts/detect-migration-targets.sh
-          affected_targets_array=$(echo "$all_added_sql_files" | tr '\n' ' ' | xargs ./scripts/detect-migration-targets.sh "$MIGRATION_TARGETS")
+          affected_targets_array=$(echo "$filtered_sql_files" | tr '\n' ' ' | xargs ./scripts/detect-migration-targets.sh "$MIGRATION_TARGETS")
           
           echo "Affected targets: $affected_targets_array"
           
@@ -67,7 +82,7 @@ jobs:
             target_config=$(echo "$MIGRATION_TARGETS" | jq -r ".$target_key")
             target_dir=$(echo "$target_config" | jq -r '.directory')
             
-            files_for_target=$(echo "$all_added_sql_files" | grep "^$target_dir/")
+            files_for_target=$(echo "$filtered_sql_files" | grep "^$target_dir/")
             target_files_array=$(echo "$files_for_target" | jq -R '.' | jq -s '.')
             
             echo "$target_config" | jq --arg key "$target_key" --argjson files "$target_files_array" '
@@ -175,6 +190,14 @@ jobs:
             echo "$content" > "$found_file"
             
             echo "Processed: $description -> $found_file"
+
+            integrated_json="integrated.json"
+            if [ ! -f "$integrated_json" ]; then
+              echo "{}" > "$integrated_json"
+            fi
+            jq --arg file "$file" --arg desc "$description" --arg integrated "$found_file" \
+              '. + {($file | tostring): {"description": $desc, "integrated_file": $integrated}}' \
+              "$integrated_json" > tmp_integrated.json && mv tmp_integrated.json "$integrated_json"
           done
           
           atlas migrate hash
@@ -187,6 +210,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add "migrations"
+          git add "integrated.json"
           
           descriptions="${{ steps.process-migrations.outputs.descriptions }}"
           
