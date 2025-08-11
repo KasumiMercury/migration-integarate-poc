@@ -269,3 +269,9 @@ jobs:
         run: |
           pr_number=${{ github.event.pull_request.number }}
           gh pr comment "$pr_number" --body "$(cat migration_summary.txt)"
+
+      - name: Setup Atlas
+        uses: ariga/setup-atlas@4240bd74ba9f13319a21de2b6e497f2b6d184d76 # v0
+      
+      - name: Lint Migrations
+        run: atlas migrate lint --dev-url "docker://postgres/17/test" --git-base "origin/main"
