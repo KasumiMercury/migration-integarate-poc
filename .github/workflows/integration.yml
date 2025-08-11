@@ -210,26 +210,19 @@ jobs:
           descriptions=$(echo "$file_description_mapping" | jq -r '.[].description' | tr '\n' ', ' | sed 's/,$//')
           echo "descriptions=$descriptions" >> "$GITHUB_OUTPUT"
 
-      # - name: Commit all migration files
-      #   run: |
-      #     git config --global user.name "github-actions[bot]"
-      #     git config --global user.email "github-actions[bot]@users.noreply.github.com"
-      #     git add "migrations"
-      #     git add "integrated.json"
-          
-      #     descriptions="${{ steps.process-migrations.outputs.descriptions }}"
-          
-      #     commit_message="Add migration files for: $descriptions"
-          
-      #     git commit -m "$commit_message" || echo "Nothing to commit"
-      #     git push
       - name: Commit all migration files
-        uses: stefanzweifel/git-auto-commit-action@v6
-        with:
-          commit_message: "Add migration files for: ${{ steps.process-migrations.outputs.descriptions }}"
-          file_pattern: |
-            migrations/**
-            integrated.json
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add "migrations"
+          git add "integrated.json"
+          
+          descriptions="${{ steps.process-migrations.outputs.descriptions }}"
+          
+          commit_message="Add migration files for: $descriptions"
+          
+          git commit -m "$commit_message" || echo "Nothing to commit"
+          git push
 
   post-migration-summary:
     needs: [check-migrations, integrate-migrations]
