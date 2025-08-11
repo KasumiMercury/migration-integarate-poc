@@ -137,12 +137,6 @@ jobs:
 
     if: ${{ needs.check-migrations.outputs.file_description_mapping != '[]' }}
 
-    strategy:
-      max-parallel: 1
-      fail-fast: true
-      matrix:
-        target: ${{ fromJson(needs.check-migrations.outputs.file_description_mapping) }}
-
     permissions:
       contents: write
       pull-requests: read
@@ -157,33 +151,48 @@ jobs:
       - name: Setup Atlas
         uses: ariga/setup-atlas@v0
 
-      - name: Create New Migration
-        run: atlas migrate new "${{ matrix.target.description }}"
-
-      - name: Find created migration file
-        id: find-migration-file
+      - name: Process all migrations
+        id: process-migrations
         run: |
-          found_file=$(find migrations -type f -name "*${{ matrix.target.description }}*.sql" | head -n 1)
-          if [ -z "$found_file" ]; then
-            echo "::error::Migration file not found."
-            exit 1
-          fi
-          echo "found_file=$found_file" >> $GITHUB_OUTPUT
+          file_description_mapping='${{ needs.check-migrations.outputs.file_description_mapping }}'
+          migration_descriptions=""
+          
+          echo "$file_description_mapping" | jq -c '.[]' | while read -r entry; do
+            description=$(echo "$entry" | jq -r '.description')
+            file=$(echo "$entry" | jq -r '.file')
+            
+            echo "Processing migration: $description from $file"
+            
+            atlas migrate new "$description"
+            
+            found_file=$(find migrations -type f -name "*${description}*.sql" | head -n 1)
+            if [ -z "$found_file" ]; then
+              echo "::error::Migration file not found for $description."
+              exit 1
+            fi
+            
+            content=$(cat "$file")
+            echo "$content" > "$found_file"
+            
+            echo "Processed: $description -> $found_file"
+          done
+          
+          atlas migrate hash
+          
+          descriptions=$(echo "$file_description_mapping" | jq -r '.[].description' | tr '\n' ', ' | sed 's/,$//')
+          echo "descriptions=$descriptions" >> $GITHUB_OUTPUT
 
-      - name: Copy migration content
-        run: |
-          content=$(cat "${{ matrix.target.file }}")
-          echo "$content" > "${{ steps.find-migration-file.outputs.found_file }}"
-      
-      - name: Recalculate hash
-        run: atlas migrate hash
-
-      - name: Commit migration file
+      - name: Commit all migration files
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add "migrations"
-          git commit -m "Add migration file for ${{ matrix.target.description }}" || echo "Nothing to commit"
+          
+          descriptions="${{ steps.process-migrations.outputs.descriptions }}"
+          
+          commit_message="Add migration files for: $descriptions"
+          
+          git commit -m "$commit_message" || echo "Nothing to commit"
           git push
 
   post-migration-summary:
