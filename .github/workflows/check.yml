@@ -1,10 +1,9 @@
 name: Migration Check
 
 on:
-  pull_request:
+  push:
     paths:
       - 'migrations/**'
-    types: [opened, synchronize, reopened]
 
 jobs:
   check-migrations:
@@ -18,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: ${{ github.ref }}
           fetch-depth: 0
 
       - name: Setup Atlas
