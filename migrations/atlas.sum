@@ -1,4 +1,4 @@
-h1:CYy54WgzKc9KiKDe2ce5ikzYXSRfJhrO6ksNGF9bTGc=
+h1:bLtzxUok5PCk4UVqzOBmbZVhMZjNscXpk3UNUbZVHiA=
 20250810075741_create_task_table.sql h1:BnzgyyW6B/qcL9XoKXGPhfOcrRLdexpqaPRWxWIk/A4=
 20250810080158_Create_user_table.sql h1:bkoD1ym+NzIs0aHL0LVf9Cz0s/MmOl7Mv/W/kSlmlb0=
 20250810080208_Add_user_email_index.sql h1:d8Q/LZ3KaNiCV0+HNcIY8U/x+TinNj0zmjwz8/y8dro=
@@ -7,3 +7,4 @@ h1:CYy54WgzKc9KiKDe2ce5ikzYXSRfJhrO6ksNGF9bTGc=
 20250810162035_Add_user_created_at_column.sql h1:ytso4tQz8aWZz5bEB3riEc0LTO/kXEsCDsDwYJkOJu0=
 20250811030711_Remove_user_middle_name_column.sql h1:NmB7c5Yer1aTN6HKeE9ek14V/scsZ2bFum4oDL/dNmw=
 20250811030712_Add_composite_index_user_group.sql h1:8CL2P0msUqnmsSMA1zhOAxOacZSgz1I8sahLqptWOR0=
+20250811052121_create_categories_tables.sql h1:FeEv8tztHyy6t+lZjj1GDUs18TY0Z+3CF8y7usu2fig=

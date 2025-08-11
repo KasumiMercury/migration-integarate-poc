@@ -6,5 +6,9 @@
   "user/V8__Add_composite_index_user_group.sql": {
     "description": "Add_composite_index_user_group",
     "integrated_file": "migrations/20250811030712_Add_composite_index_user_group.sql"
+  },
+  "task/20250809142209_create_categories_tables.sql": {
+    "description": "create_categories_tables",
+    "integrated_file": "migrations/20250811052121_create_categories_tables.sql"
   }
 }
